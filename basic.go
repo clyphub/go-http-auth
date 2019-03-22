@@ -141,7 +141,7 @@ func (a *BasicAuth) NewContext(ctx context.Context, r *http.Request) context.Con
 func NewBasicAuthenticator(realm string, secrets SecretProvider, authenticationSchemeOverride *string) *BasicAuth {
 	authenticationScheme := "Basic"
 	if authenticationSchemeOverride != nil {
-		authenticationScheme = authenticationSchemeOverride
+		authenticationScheme = *authenticationSchemeOverride
 	}
 	return &BasicAuth{Realm: realm, Secrets: secrets, authenticationScheme: authenticationScheme}
 }
