@@ -31,8 +31,9 @@ var (
 )
 
 type BasicAuth struct {
-	Realm   string
-	Secrets SecretProvider
+	Realm                string
+	Secrets              SecretProvider
+	authenticationScheme string
 }
 
 // check that BasicAuth implements AuthenticatorInterface
@@ -104,7 +105,7 @@ func compareMD5HashAndPassword(hashedPassword, password []byte) error {
  (or requires reauthentication).
 */
 func (a *BasicAuth) RequireAuth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("WWW-Authenticate", `Basic realm="`+a.Realm+`"`)
+	w.Header().Set("WWW-Authenticate", a.authenticationScheme+` realm="`+a.Realm+`"`)
 	w.WriteHeader(401)
 	w.Write([]byte("401 Unauthorized\n"))
 }
@@ -137,6 +138,10 @@ func (a *BasicAuth) NewContext(ctx context.Context, r *http.Request) context.Con
 	return context.WithValue(ctx, infoKey, info)
 }
 
-func NewBasicAuthenticator(realm string, secrets SecretProvider) *BasicAuth {
-	return &BasicAuth{Realm: realm, Secrets: secrets}
+func NewBasicAuthenticator(realm string, secrets SecretProvider, authenticationSchemeOverride *string) *BasicAuth {
+	authenticationScheme := "Basic"
+	if authenticationSchemeOverride != nil {
+		authenticationScheme = authenticationSchemeOverride
+	}
+	return &BasicAuth{Realm: realm, Secrets: secrets, authenticationScheme: authenticationScheme}
 }
